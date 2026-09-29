@@ -1,0 +1,6 @@
+restaurante\service\Atendente.class
+restaurante\util\Logger.class
+restaurante\Main.class
+restaurante\model\Pedido.class
+restaurante\model\Prato.class
+restaurante\service\Cozinheiro.class
