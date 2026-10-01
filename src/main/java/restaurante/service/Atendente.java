@@ -1,13 +1,13 @@
 package restaurante.service;
 
-import restaurante.model.Pedido;
-import restaurante.model.Prato;
-import restaurante.util.Logger;
-
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import restaurante.model.Pedido;
+import restaurante.model.Prato;
+import restaurante.util.Logger;
 
 public class Atendente implements Runnable {
 
@@ -40,27 +40,40 @@ public class Atendente implements Runnable {
 
             try {
 
-                Thread.sleep(random.nextInt(500) + 200);
-
-                Prato prato = cardapio.get(
-                        random.nextInt(cardapio.size())
+                Thread.sleep(
+                        random.nextInt(500) + 200
                 );
 
-                int numeroPedido = contadorPedidos.incrementAndGet();
+                Prato prato =
+                        cardapio.get(
+                                random.nextInt(
+                                        cardapio.size()
+                                )
+                        );
 
-                Pedido pedido = new Pedido(numeroPedido, prato);
+                int numeroPedido =
+                        contadorPedidos.incrementAndGet();
+
+                Pedido pedido =
+                        new Pedido(
+                                numeroPedido,
+                                prato
+                        );
 
                 Logger.log(
-                        "Atendente " + id +
-                        " criou " + pedido
+                        "Atendente " +
+                        id +
+                        " criou " +
+                        pedido
                 );
 
                 fila.put(pedido);
 
                 Logger.log(
-                        "Atendente " + id +
-                        " colocou Pedido #" +
-                        numeroPedido +
+                        "Atendente " +
+                        id +
+                        " colocou " +
+                        pedido +
                         " na fila (" +
                         fila.size() +
                         "/10)"
@@ -71,7 +84,8 @@ public class Atendente implements Runnable {
                 Thread.currentThread().interrupt();
 
                 Logger.log(
-                        "Atendente " + id +
+                        "Atendente " +
+                        id +
                         " foi interrompido."
                 );
 
@@ -80,7 +94,8 @@ public class Atendente implements Runnable {
         }
 
         Logger.log(
-                "Atendente " + id +
+                "Atendente " +
+                id +
                 " terminou de gerar pedidos."
         );
     }

@@ -10,8 +10,11 @@ public class Logger {
 
     public static synchronized void log(String mensagem) {
 
-        String horario = LocalTime.now().format(FORMATTER);
+        String horario =
+                LocalTime.now().format(FORMATTER);
 
-        System.out.println("[" + horario + "] " + mensagem);
+        System.out.println(
+                "[" + horario + "] " + mensagem
+        );
     }
 }

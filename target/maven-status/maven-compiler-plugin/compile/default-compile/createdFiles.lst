@@ -1,6 +1,12 @@
-restaurante\service\Atendente.class
-restaurante\util\Logger.class
+restaurante\model\Pedido$Status.class
+restaurante\service\Cozinha.class
 restaurante\Main.class
 restaurante\model\Pedido.class
 restaurante\model\Prato.class
+restaurante\service\Atendente.class
+restaurante\service\Balcao.class
+restaurante\service\Garcom.class
+restaurante\util\Logger.class
+restaurante\util\AutoResetEvent.class
 restaurante\service\Cozinheiro.class
+restaurante\service\Estoque.class
