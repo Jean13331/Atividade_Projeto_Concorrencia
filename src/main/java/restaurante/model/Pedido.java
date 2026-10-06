@@ -6,14 +6,13 @@ public class Pedido {
         PENDENTE,
         RECUSADO,
         PRONTO,
-        ENTREGUE
+        ENTREGUE,
+        NAO_SERVIDO
     }
 
     private final int id;
     private final Prato prato;
-
     private volatile Status status;
-
     private final boolean sinalEncerramento;
 
     public Pedido(int id, Prato prato) {
@@ -56,6 +55,10 @@ public class Pedido {
 
     @Override
     public String toString() {
+        if (sinalEncerramento) {
+            return "SINAL DE ENCERRAMENTO";
+        }
+
         return "Pedido #" + id + " - " + prato.getNome();
     }
 }

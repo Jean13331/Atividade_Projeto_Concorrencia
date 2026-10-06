@@ -10,10 +10,14 @@ import restaurante.model.Pedido;
 import restaurante.model.Prato;
 import restaurante.service.Atendente;
 import restaurante.service.Balcao;
+import restaurante.service.Caixa;
+import restaurante.service.ControlePedidos;
 import restaurante.service.Cozinha;
 import restaurante.service.Cozinheiro;
 import restaurante.service.Estoque;
 import restaurante.service.Garcom;
+import restaurante.service.Gerente;
+import restaurante.service.Relatorio;
 import restaurante.util.Logger;
 
 public class Main {
@@ -21,47 +25,39 @@ public class Main {
     public static void main(String[] args)
             throws InterruptedException {
 
-        Logger.log(
-                "=========================================="
-        );
+        Logger.log("==========================================");
+        Logger.log("       RESTAURANTE CONCORRENTE");
+        Logger.log("       ENTREGA 3 - MODO SEGURO");
+        Logger.log("==========================================");
 
-        Logger.log(
-                "       RESTAURANTE CONCORRENTE"
-        );
-
-        Logger.log(
-                "       ENTREGA 2 - RECURSOS"
-        );
-
-        Logger.log(
-                "=========================================="
-        );
-
-        // =========================================
-        // CONFIGURAÇÕES
-        // =========================================
-
+        /*
+         * CONFIGURAÇÕES
+         */
         int quantidadeAtendentes = 2;
-
         int quantidadeCozinheiros = 4;
-
         int totalPedidos = 60;
-
         int capacidadeFila = 10;
 
-        // =========================================
-        // FILA
-        // =========================================
+        /*
+         * Tempo que o restaurante ficará aberto.
+         *
+         * Para apresentação/teste podemos usar 10 segundos.
+         */
+        int tempoFuncionamento = 10;
 
+        /*
+         * FILA DE PEDIDOS
+         *
+         * Capacidade máxima = 10
+         */
         BlockingQueue<Pedido> fila =
                 new ArrayBlockingQueue<>(
                         capacidadeFila
                 );
 
-        // =========================================
-        // CARDÁPIO
-        // =========================================
-
+        /*
+         * CARDÁPIO
+         */
         List<Prato> cardapio =
                 new ArrayList<>();
 
@@ -124,9 +120,9 @@ public class Main {
                 )
         );
 
-        // =========================================
-        // RECURSOS COMPARTILHADOS
-        // =========================================
+        /*
+         * RECURSOS DO RESTAURANTE
+         */
 
         Estoque estoque =
                 new Estoque();
@@ -137,38 +133,96 @@ public class Main {
         Balcao balcao =
                 new Balcao();
 
-        // =========================================
-        // CONTADOR
-        // =========================================
+        Caixa caixa =
+                new Caixa();
 
+        /*
+         * Contador compartilhado entre os dois atendentes.
+         */
         AtomicInteger contadorPedidos =
                 new AtomicInteger(0);
 
-        // =========================================
-        // THREADS
-        // =========================================
+        /*
+         * Controle de todos os pedidos criados.
+         *
+         * Será utilizado pelo relatório final.
+         */
+        ControlePedidos controlePedidos =
+                new ControlePedidos();
 
+        /*
+         * GERENTE
+         */
+        Gerente gerente =
+                new Gerente(
+                        tempoFuncionamento
+                );
+
+        /*
+         * LISTAS DE THREADS
+         */
         List<Thread> atendentes =
                 new ArrayList<>();
 
         List<Thread> cozinheiros =
                 new ArrayList<>();
 
-        // =========================================
-        // GARÇOM
-        // =========================================
+        /*
+         * =========================================
+         * GARÇOM
+         * =========================================
+         */
 
         Thread garcom =
                 new Thread(
-                        new Garcom(balcao),
+                        new Garcom(
+                                balcao,
+                                caixa
+                        ),
                         "Garcom"
                 );
 
+        /*
+         * =========================================
+         * GERENTE
+         * =========================================
+         */
+
+        Thread threadGerente =
+                new Thread(
+                        gerente,
+                        "Gerente"
+                );
+
+        /*
+         * =========================================
+         * INICIA GERENTE
+         * =========================================
+         */
+
+        Logger.log(
+                "Iniciando gerente..."
+        );
+
+        threadGerente.start();
+
+        /*
+         * =========================================
+         * INICIA GARÇOM
+         * =========================================
+         */
+
+        Logger.log(
+                "Iniciando garcom..."
+        );
+
         garcom.start();
 
-        // =========================================
-        // ATENDENTES
-        // =========================================
+        /*
+         * =========================================
+         * INICIA ATENDENTES
+         * =========================================
+         */
 
         Logger.log(
                 "Iniciando " +
@@ -180,11 +234,9 @@ public class Main {
                 totalPedidos /
                 quantidadeAtendentes;
 
-        for (
-                int i = 1;
-                i <= quantidadeAtendentes;
-                i++
-        ) {
+        for (int i = 1;
+             i <= quantidadeAtendentes;
+             i++) {
 
             Thread atendente =
                     new Thread(
@@ -193,7 +245,9 @@ public class Main {
                                     fila,
                                     cardapio,
                                     pedidosPorAtendente,
-                                    contadorPedidos
+                                    contadorPedidos,
+                                    gerente,
+                                    controlePedidos
                             ),
                             "Atendente-" + i
                     );
@@ -203,9 +257,11 @@ public class Main {
             atendente.start();
         }
 
-        // =========================================
-        // COZINHEIROS
-        // =========================================
+        /*
+         * =========================================
+         * INICIA COZINHEIROS
+         * =========================================
+         */
 
         Logger.log(
                 "Iniciando " +
@@ -213,11 +269,9 @@ public class Main {
                 " cozinheiros..."
         );
 
-        for (
-                int i = 1;
-                i <= quantidadeCozinheiros;
-                i++
-        ) {
+        for (int i = 1;
+             i <= quantidadeCozinheiros;
+             i++) {
 
             Thread cozinheiro =
                     new Thread(
@@ -226,7 +280,8 @@ public class Main {
                                     fila,
                                     estoque,
                                     cozinha,
-                                    balcao
+                                    balcao,
+                                    gerente
                             ),
                             "Cozinheiro-" + i
                     );
@@ -236,9 +291,11 @@ public class Main {
             cozinheiro.start();
         }
 
-        // =========================================
-        // ESPERA OS ATENDENTES
-        // =========================================
+        /*
+         * =========================================
+         * ESPERA OS ATENDENTES
+         * =========================================
+         */
 
         for (Thread atendente : atendentes) {
 
@@ -246,17 +303,64 @@ public class Main {
         }
 
         Logger.log(
-                "Os dois atendentes terminaram."
+                "Todos os atendentes terminaram."
         );
 
-        // =========================================
-        // SINAIS DE ENCERRAMENTO
-        // =========================================
         /*
-         * Um sinal para cada cozinheiro.
-         * Eles só são enviados depois que os
-         * atendentes terminaram.
+         * =========================================
+         * ESPERA O GERENTE
+         * =========================================
          */
+
+        threadGerente.join();
+
+        Logger.log(
+                "O gerente encerrou o restaurante."
+        );
+
+        /*
+         * =========================================
+         * PEDIDOS QUE FICARAM NA FILA
+         * =========================================
+         *
+         * Como o restaurante fechou, pedidos que ainda
+         * estavam esperando na fila não serão preparados.
+         */
+
+        Logger.log(
+                "Verificando pedidos restantes na fila..."
+        );
+
+        Pedido pedido;
+
+        while ((pedido = fila.poll()) != null) {
+
+            /*
+             * Ignora qualquer sinal de encerramento.
+             */
+            if (pedido.isSinalEncerramento()) {
+                continue;
+            }
+
+            pedido.setStatus(
+                    Pedido.Status.NAO_SERVIDO
+            );
+
+            Logger.log(
+                    pedido +
+                    " foi marcado como NAO SERVIDO."
+            );
+        }
+
+        /*
+         * =========================================
+         * SINAIS DE ENCERRAMENTO DOS COZINHEIROS
+         * =========================================
+         */
+
+        Logger.log(
+                "Enviando sinais de encerramento para os cozinheiros..."
+        );
 
         for (int i = 0;
              i < quantidadeCozinheiros;
@@ -267,9 +371,11 @@ public class Main {
             );
         }
 
-        // =========================================
-        // ESPERA OS COZINHEIROS
-        // =========================================
+        /*
+         * =========================================
+         * ESPERA OS COZINHEIROS
+         * =========================================
+         */
 
         for (Thread cozinheiro : cozinheiros) {
 
@@ -280,27 +386,47 @@ public class Main {
                 "Todos os cozinheiros terminaram."
         );
 
-        // =========================================
-        // FECHA O BALCÃO
-        // =========================================
+        /*
+         * =========================================
+         * FECHA O BALCÃO
+         * =========================================
+         */
+
+        Logger.log(
+                "Fechando balcao..."
+        );
 
         balcao.fechar();
 
-        // =========================================
-        // ESPERA O GARÇOM
-        // =========================================
+        /*
+         * =========================================
+         * ESPERA O GARÇOM
+         * =========================================
+         */
 
         garcom.join();
 
-        // =========================================
-        // ESTOQUE
-        // =========================================
+        Logger.log(
+                "Garçom terminou."
+        );
 
-        estoque.imprimirEstoque();
+        /*
+         * =========================================
+         * RELATÓRIO FINAL
+         * =========================================
+         */
 
-        // =========================================
-        // FINAL
-        // =========================================
+        Relatorio.imprimir(
+                controlePedidos.getPedidos(),
+                caixa,
+                estoque
+        );
+
+        /*
+         * =========================================
+         * ENCERRAMENTO
+         * =========================================
+         */
 
         Logger.log(
                 "=========================================="

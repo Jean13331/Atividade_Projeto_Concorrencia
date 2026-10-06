@@ -6,9 +6,11 @@ import restaurante.util.Logger;
 public class Garcom implements Runnable {
 
     private final Balcao balcao;
+    private final Caixa caixa;
 
-    public Garcom(Balcao balcao) {
+    public Garcom(Balcao balcao, Caixa caixa) {
         this.balcao = balcao;
+        this.caixa = caixa;
     }
 
     @Override
@@ -18,10 +20,8 @@ public class Garcom implements Runnable {
 
             while (true) {
 
-                // Espera o sino tocar
                 balcao.getSino().waitOne();
 
-                // Esvazia TODO o balcão
                 while (true) {
 
                     Pedido pedido =
@@ -31,20 +31,18 @@ public class Garcom implements Runnable {
                         break;
                     }
 
-                    pedido.setStatus(
-                            Pedido.Status.ENTREGUE
-                    );
+                    pedido.setStatus(Pedido.Status.ENTREGUE);
 
                     Logger.log(
-                            "Garçom entregou " +
+                            "Garcom entregou " +
                             pedido
                     );
+
+                    caixa.registrarVenda(pedido);
                 }
 
-                if (
-                        balcao.isFechado()
-                        && balcao.getFila().isEmpty()
-                ) {
+                if (balcao.isFechado()
+                        && balcao.getFila().isEmpty()) {
 
                     Logger.log(
                             "Garcom encerrou o trabalho."

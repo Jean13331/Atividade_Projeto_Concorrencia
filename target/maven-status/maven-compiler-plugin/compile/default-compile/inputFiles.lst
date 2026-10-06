@@ -3,9 +3,13 @@ C:\Users\jeano\Desktop\Atividade_Projeto_Concorrencia\src\main\java\restaurante\
 C:\Users\jeano\Desktop\Atividade_Projeto_Concorrencia\src\main\java\restaurante\model\Prato.java
 C:\Users\jeano\Desktop\Atividade_Projeto_Concorrencia\src\main\java\restaurante\service\Atendente.java
 C:\Users\jeano\Desktop\Atividade_Projeto_Concorrencia\src\main\java\restaurante\service\Balcao.java
+C:\Users\jeano\Desktop\Atividade_Projeto_Concorrencia\src\main\java\restaurante\service\Caixa.java
+C:\Users\jeano\Desktop\Atividade_Projeto_Concorrencia\src\main\java\restaurante\service\ControlePedidos.java
 C:\Users\jeano\Desktop\Atividade_Projeto_Concorrencia\src\main\java\restaurante\service\Cozinha.java
 C:\Users\jeano\Desktop\Atividade_Projeto_Concorrencia\src\main\java\restaurante\service\Cozinheiro.java
 C:\Users\jeano\Desktop\Atividade_Projeto_Concorrencia\src\main\java\restaurante\service\Estoque.java
 C:\Users\jeano\Desktop\Atividade_Projeto_Concorrencia\src\main\java\restaurante\service\Garcom.java
+C:\Users\jeano\Desktop\Atividade_Projeto_Concorrencia\src\main\java\restaurante\service\Gerente.java
+C:\Users\jeano\Desktop\Atividade_Projeto_Concorrencia\src\main\java\restaurante\service\Relatorio.java
 C:\Users\jeano\Desktop\Atividade_Projeto_Concorrencia\src\main\java\restaurante\util\AutoResetEvent.java
 C:\Users\jeano\Desktop\Atividade_Projeto_Concorrencia\src\main\java\restaurante\util\Logger.java

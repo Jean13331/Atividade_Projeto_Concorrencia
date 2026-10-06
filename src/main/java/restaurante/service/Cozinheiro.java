@@ -9,23 +9,25 @@ public class Cozinheiro implements Runnable {
 
     private final int id;
     private final BlockingQueue<Pedido> fila;
-
     private final Estoque estoque;
     private final Cozinha cozinha;
     private final Balcao balcao;
+    private final Gerente gerente;
 
     public Cozinheiro(
             int id,
             BlockingQueue<Pedido> fila,
             Estoque estoque,
             Cozinha cozinha,
-            Balcao balcao
-    ) {
+            Balcao balcao,
+            Gerente gerente) {
+
         this.id = id;
         this.fila = fila;
         this.estoque = estoque;
         this.cozinha = cozinha;
         this.balcao = balcao;
+        this.gerente = gerente;
     }
 
     @Override
@@ -35,47 +37,49 @@ public class Cozinheiro implements Runnable {
 
             while (true) {
 
-                Pedido pedido = fila.take();
-
-                // Sinal para encerrar o cozinheiro
-                if (pedido.isSinalEncerramento()) {
-
+                /*
+                 * Se o restaurante fechou e não existem mais pedidos,
+                 * o cozinheiro pode encerrar.
+                 */
+                if (!gerente.isRestauranteAberto() && fila.isEmpty()) {
                     Logger.log(
-                            "Cozinheiro " +
-                            id +
-                            " encerrou."
+                            "Cozinheiro " + id +
+                            " encerrou após o fechamento."
                     );
+                    break;
+                }
 
+                Pedido pedido = fila.poll();
+
+                if (pedido == null) {
+                    Thread.sleep(100);
+                    continue;
+                }
+
+                if (pedido.isSinalEncerramento()) {
+                    Logger.log(
+                            "Cozinheiro " + id +
+                            " recebeu sinal de encerramento."
+                    );
                     break;
                 }
 
                 Logger.log(
-                        "Cozinheiro " +
-                        id +
-                        " pegou " +
-                        pedido
+                        "Cozinheiro " + id +
+                        " pegou " + pedido
                 );
 
-                /*
-                 * Reserva todos os ingredientes
-                 * antes de começar o preparo.
-                 */
                 boolean reservado =
                         estoque.reservarTodos(
-                                pedido
-                                        .getPrato()
-                                        .getIngredientes()
+                                pedido.getPrato().getIngredientes()
                         );
 
                 if (!reservado) {
 
-                    pedido.setStatus(
-                            Pedido.Status.RECUSADO
-                    );
+                    pedido.setStatus(Pedido.Status.RECUSADO);
 
                     Logger.log(
-                            "Pedido recusado por falta " +
-                            "de ingrediente: " +
+                            "Pedido recusado por falta de ingrediente: " +
                             pedido
                     );
 
@@ -83,21 +87,19 @@ public class Cozinheiro implements Runnable {
                 }
 
                 Logger.log(
-                        "Cozinheiro " +
-                        id +
-                        " reservou os ingredientes " +
-                        "de " +
+                        "Cozinheiro " + id +
+                        " reservou os ingredientes de " +
                         pedido
                 );
 
-                // Prepara usando forno ou utensílios
+                /*
+                 * O cozinheiro termina o pedido mesmo que
+                 * o restaurante seja fechado durante o preparo.
+                 */
                 cozinha.preparar(pedido);
 
-                pedido.setStatus(
-                        Pedido.Status.PRONTO
-                );
+                pedido.setStatus(Pedido.Status.PRONTO);
 
-                // Envia para o balcão
                 balcao.adicionar(pedido);
             }
 
@@ -106,8 +108,7 @@ public class Cozinheiro implements Runnable {
             Thread.currentThread().interrupt();
 
             Logger.log(
-                    "Cozinheiro " +
-                    id +
+                    "Cozinheiro " + id +
                     " foi interrompido."
             );
         }
